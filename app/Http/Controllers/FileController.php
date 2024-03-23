@@ -4,27 +4,31 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\File;
 
 class FileController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        /* Simple Put File */
-//        Storage::disk('dropbox')->put('demo.txt', "Hello");
-
-        /* Simple Get File Content */
-//        Storage::disk('dropbox')->get('demo.txt');
-//
-//        /* Simple Store File */
-//        $path = Storage::disk('dropbox')->putFileAs(
-//            'avatars', $request->file('avatar'), $request->user()->id
-//        );
-//
-//        dd('DONE');
+        return view('layouts.app');
     }
 
     public function saveFile(Request $request)
     {
-        Storage::disk('dropbox')->put('demo.txt', "Hello");
+        if ($request->file('file')) {
+
+            $this->validate($request, [
+                'file' => ['required', File::types(['pdf',])->max(10000)]
+            ]);
+
+            $file = $request->file('file');
+            $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+            if (!Storage::disk('dropbox')->put($fileName, file_get_contents($file))) {
+                return back()->with('error', 'Ошибка при сохранении');
+            } else {
+                $link = Storage::disk('dropbox')->url($fileName);
+                return back()->with('success', "Успешно сохранено, адрес для скачивания $link");
+            }
+        }
     }
 }

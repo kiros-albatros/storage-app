@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [FileController::class, 'index']);
 
-Route::get('/file', [FileController::class, 'saveFile']);
+Route::post('/file', [FileController::class, 'saveFile'])->name('save_file');
